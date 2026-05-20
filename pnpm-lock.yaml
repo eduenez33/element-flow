@@ -14,6 +14,9 @@ importers:
 
   apps/api:
     dependencies:
+      '@element-flow/shared':
+        specifier: workspace:*
+        version: link:../../packages/shared
       cookie-parser:
         specifier: ^1.4.7
         version: 1.4.7
