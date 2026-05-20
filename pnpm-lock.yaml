@@ -75,6 +75,9 @@ importers:
 
   apps/web:
     dependencies:
+      '@element-flow/shared':
+        specifier: workspace:*
+        version: link:../../packages/shared
       '@tanstack/react-query':
         specifier: ^5.100.11
         version: 5.100.11(react@19.2.6)
