@@ -34,12 +34,30 @@ const generateTokens = (payload: TokenPayload) => {
   return { accessToken, refreshToken };
 };
 
-// TODO 3: Implement register(input: RegisterInput)
-// - Check if a user with input.email already exists in the DB
-// - If yes, throw an error with status 409 (CONFLICT)
-// - Hash the password using bcrypt with 10 salt rounds
-// - Insert new user into the DB (email, passwordHash, name)
-// - Generate and return tokens using generateTokens()
+export const register = async (input: RegisterInput) => {
+  const existingUser = await db
+    .select()
+    .from(users)
+    .where(eq(users.email, input.email));
+  if (existingUser.length > 0) {
+    throw new Error("User already exists");
+  }
+  const passwordHash = await bcrypt.hash(input.password, 10);
+
+  const [newUser] = await db
+    .insert(users)
+    .values({
+      email: input.email,
+      passwordHash,
+      name: input.name,
+    })
+    .returning();
+
+  return generateTokens({
+    userId: newUser.id,
+    email: input.email,
+  });
+};
 
 // TODO 4: Implement login(input: LoginInput)
 // - Find user by input.email in the DB
