@@ -28,11 +28,11 @@ const generateTokens = (payload: TokenPayload) => {
 };
 
 export const register = async (input: RegisterInput) => {
-  const existingUser = await db
+  const [existingUser] = await db
     .select()
     .from(users)
     .where(eq(users.email, input.email));
-  if (existingUser.length > 0) {
+  if (existingUser) {
     throw new Error("User already exists");
   }
   const passwordHash = await bcrypt.hash(input.password, 10);
