@@ -6,7 +6,7 @@ import { users } from "../db/schema/index.js";
 import type { RegisterInput, LoginInput } from "@element-flow/shared";
 import { AppError } from "../lib/errors.js";
 
-type TokenPayload = {
+export type TokenPayload = {
   userId: string;
   email: string;
 };
