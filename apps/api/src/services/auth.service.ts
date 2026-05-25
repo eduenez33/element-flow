@@ -77,11 +77,24 @@ export const login = async (input: LoginInput) => {
   });
 };
 
-// TODO 5: Implement refreshTokens(token: string)
-// - Verify the refresh token using JWT_REFRESH_SECRET
-// - Extract userId from the payload
-// - Find the user in the DB to confirm they still exist
-// - If invalid or user not found, throw 401
-// - Generate and return new tokens using generateTokens()
+export const refreshTokens = async (token: string) => {
+  try {
+    const payload = jwt.verify(token, JWT_REFRESH_SECRET) as TokenPayload;
 
-export const refreshTokens = (token: string) => {};
+    const [user] = await db
+      .select()
+      .from(users)
+      .where(eq(users.id, payload.userId));
+
+    if (!user) {
+      throw new Error("Invalid refresh token");
+    }
+
+    return generateTokens({
+      userId: user.id,
+      email: user.email,
+    });
+  } catch (error) {
+    throw new Error("Invalid refresh token");
+  }
+};
