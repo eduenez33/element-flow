@@ -53,19 +53,18 @@ export const register = async (input: RegisterInput) => {
 };
 
 export const login = async (input: LoginInput) => {
-  const user = await db
+  const [user] = await db
     .select()
     .from(users)
     .where(eq(users.email, input.email));
 
-  if (user.length === 0) {
+  if (!user) {
     throw new Error("Invalid email or password");
   }
 
-  const userRecord = user[0];
   const isPasswordValid = await bcrypt.compare(
     input.password,
-    userRecord.passwordHash,
+    user.passwordHash,
   );
 
   if (!isPasswordValid) {
@@ -73,8 +72,8 @@ export const login = async (input: LoginInput) => {
   }
 
   return generateTokens({
-    userId: userRecord.id,
-    email: userRecord.email,
+    userId: user.id,
+    email: user.email,
   });
 };
 
