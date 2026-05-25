@@ -18,6 +18,18 @@ const JWT_EXPIRES_IN = (process.env.JWT_EXPIRES_IN ||
 const JWT_REFRESH_EXPIRES_IN = (process.env.JWT_REFRESH_EXPIRES_IN ||
   "7d") as `${number}${"s" | "m" | "h" | "d" | "w" | "y"}`;
 
+const verifyRefreshToken = (token: string): TokenPayload => {
+  try {
+    return jwt.verify(token, JWT_REFRESH_SECRET) as TokenPayload;
+  } catch {
+    throw new AppError(
+      401,
+      "INVALID_REFRESH_TOKEN",
+      "Invalid or expired refresh token",
+    );
+  }
+};
+
 const generateTokens = (payload: TokenPayload) => {
   const accessToken = jwt.sign(payload, JWT_SECRET, {
     expiresIn: JWT_EXPIRES_IN,
@@ -77,23 +89,19 @@ export const login = async (input: LoginInput) => {
 };
 
 export const refreshTokens = async (token: string) => {
-  try {
-    const payload = jwt.verify(token, JWT_REFRESH_SECRET) as TokenPayload;
+  const payload = verifyRefreshToken(token);
 
-    const [user] = await db
-      .select()
-      .from(users)
-      .where(eq(users.id, payload.userId));
+  const [user] = await db
+    .select()
+    .from(users)
+    .where(eq(users.id, payload.userId));
 
-    if (!user) {
-      throw new AppError(401, "INVALID_REFRESH_TOKEN", "Invalid refresh token");
-    }
-
-    return generateTokens({
-      userId: user.id,
-      email: user.email,
-    });
-  } catch (error) {
-    throw new AppError(401, "INVALID_REFRESH_TOKEN", "Invalid refresh token");
+  if (!user) {
+    throw new AppError(401, "INVALID_REFRESH_TOKEN", "User no longer exists");
   }
+
+  return generateTokens({
+    userId: user.id,
+    email: user.email,
+  });
 };
