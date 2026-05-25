@@ -59,16 +59,14 @@ export const login = async (input: LoginInput) => {
     .from(users)
     .where(eq(users.email, input.email));
 
-  if (!user) {
-    throw new AppError(401, "INVALID_CREDENTIALS", "Invalid email or password");
-  }
+  const isPasswordValid = user
+    ? await bcrypt.compare(input.password, user.passwordHash)
+    : await bcrypt.compare(
+        input.password,
+        "$2a$10$invalidhashinvalidhashinvalid.",
+      );
 
-  const isPasswordValid = await bcrypt.compare(
-    input.password,
-    user.passwordHash,
-  );
-
-  if (!isPasswordValid) {
+  if (!user || !isPasswordValid) {
     throw new AppError(401, "INVALID_CREDENTIALS", "Invalid email or password");
   }
 
