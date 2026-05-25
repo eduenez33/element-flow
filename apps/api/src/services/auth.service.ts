@@ -18,6 +18,8 @@ const JWT_EXPIRES_IN = (process.env.JWT_EXPIRES_IN ||
 const JWT_REFRESH_EXPIRES_IN = (process.env.JWT_REFRESH_EXPIRES_IN ||
   "7d") as `${number}${"s" | "m" | "h" | "d" | "w" | "y"}`;
 
+const DUMMY_HASH = "$2a$10$invalidhashinvalidhashinvalid.";
+
 const verifyRefreshToken = (token: string): TokenPayload => {
   try {
     return jwt.verify(token, JWT_REFRESH_SECRET) as TokenPayload;
@@ -73,10 +75,7 @@ export const login = async (input: LoginInput) => {
 
   const isPasswordValid = user
     ? await bcrypt.compare(input.password, user.passwordHash)
-    : await bcrypt.compare(
-        input.password,
-        "$2a$10$invalidhashinvalidhashinvalid.",
-      );
+    : await bcrypt.compare(input.password, DUMMY_HASH);
 
   if (!user || !isPasswordValid) {
     throw new AppError(401, "INVALID_CREDENTIALS", "Invalid email or password");
