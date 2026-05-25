@@ -59,11 +59,31 @@ export const register = async (input: RegisterInput) => {
   });
 };
 
-// TODO 4: Implement login(input: LoginInput)
-// - Find user by input.email in the DB
-// - If not found OR password doesn't match, throw a generic 401 error
-//   (do NOT reveal whether email or password was wrong)
-// - Generate and return tokens using generateTokens()
+export const login = async (input: LoginInput) => {
+  const user = await db
+    .select()
+    .from(users)
+    .where(eq(users.email, input.email));
+
+  if (user.length === 0) {
+    throw new Error("Invalid email or password");
+  }
+
+  const userRecord = user[0];
+  const isPasswordValid = await bcrypt.compare(
+    input.password,
+    userRecord.passwordHash,
+  );
+
+  if (!isPasswordValid) {
+    throw new Error("Invalid email or password");
+  }
+
+  return generateTokens({
+    userId: userRecord.id,
+    email: userRecord.email,
+  });
+};
 
 // TODO 5: Implement refreshTokens(token: string)
 // - Verify the refresh token using JWT_REFRESH_SECRET
