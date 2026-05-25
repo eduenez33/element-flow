@@ -84,3 +84,5 @@ export const login = async (input: LoginInput) => {
 // - Find the user in the DB to confirm they still exist
 // - If invalid or user not found, throw 401
 // - Generate and return new tokens using generateTokens()
+
+export const refreshTokens = (token: string) => {};
