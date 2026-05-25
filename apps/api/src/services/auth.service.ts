@@ -5,17 +5,10 @@ import { db } from "../db/index.js";
 import { users } from "../db/schema/index.js";
 import type { RegisterInput, LoginInput } from "@element-flow/shared";
 
-// TODO 1: Define a TokenPayload type for what gets encoded in the JWT
-// It should contain userId and email
 type TokenPayload = {
   userId: string;
   email: string;
 };
-
-// TODO 2: Implement generateTokens(payload: TokenPayload)
-// - Sign an access token using JWT_SECRET, expires in JWT_EXPIRES_IN
-// - Sign a refresh token using JWT_REFRESH_SECRET, expires in JWT_REFRESH_EXPIRES_IN
-// - Return { accessToken, refreshToken }
 
 const JWT_SECRET = process.env.JWT_SECRET!;
 const JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET!;
