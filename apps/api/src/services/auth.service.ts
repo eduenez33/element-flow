@@ -4,6 +4,7 @@ import { eq } from "drizzle-orm";
 import { db } from "../db/index.js";
 import { users } from "../db/schema/index.js";
 import type { RegisterInput, LoginInput } from "@element-flow/shared";
+import { AppError } from "../lib/errors.js";
 
 type TokenPayload = {
   userId: string;
@@ -33,7 +34,7 @@ export const register = async (input: RegisterInput) => {
     .from(users)
     .where(eq(users.email, input.email));
   if (existingUser) {
-    throw new Error("User already exists");
+    throw new AppError(409, "USER_ALREADY_EXISTS", "User already exists");
   }
   const passwordHash = await bcrypt.hash(input.password, 10);
 
@@ -59,7 +60,7 @@ export const login = async (input: LoginInput) => {
     .where(eq(users.email, input.email));
 
   if (!user) {
-    throw new Error("Invalid email or password");
+    throw new AppError(401, "INVALID_CREDENTIALS", "Invalid email or password");
   }
 
   const isPasswordValid = await bcrypt.compare(
@@ -68,7 +69,7 @@ export const login = async (input: LoginInput) => {
   );
 
   if (!isPasswordValid) {
-    throw new Error("Invalid email or password");
+    throw new AppError(401, "INVALID_CREDENTIALS", "Invalid email or password");
   }
 
   return generateTokens({
@@ -87,7 +88,7 @@ export const refreshTokens = async (token: string) => {
       .where(eq(users.id, payload.userId));
 
     if (!user) {
-      throw new Error("Invalid refresh token");
+      throw new AppError(401, "INVALID_REFRESH_TOKEN", "Invalid refresh token");
     }
 
     return generateTokens({
@@ -95,6 +96,6 @@ export const refreshTokens = async (token: string) => {
       email: user.email,
     });
   } catch (error) {
-    throw new Error("Invalid refresh token");
+    throw new AppError(401, "INVALID_REFRESH_TOKEN", "Invalid refresh token");
   }
 };
