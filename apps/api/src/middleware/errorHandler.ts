@@ -1,4 +1,5 @@
 import type { ErrorRequestHandler } from "express";
+import { AppError } from "../lib/errors.js";
 
 export const errorHandler: ErrorRequestHandler = (err, _req, res, _next) => {
   console.error(err);
@@ -14,22 +15,10 @@ export const errorHandler: ErrorRequestHandler = (err, _req, res, _next) => {
     message = err.issues
       .map((i: any) => `${i.path.join(".")}: ${i.message}`)
       .join(", ");
-  } else if (err.status === 401) {
-    status = 401;
-    code = "UNAUTHORIZED";
-    message = "Authentication required";
-  } else if (err.status === 403) {
-    status = 403;
-    code = "FORBIDDEN";
-    message = "Access denied";
-  } else if (err.status === 404) {
-    status = 404;
-    code = "NOT_FOUND";
-    message = "Resource not found";
-  } else if (err.status === 409) {
-    status = 409;
-    code = "CONFLICT";
-    message = "Resource already exists";
+  } else if (err instanceof AppError) {
+    status = err.status;
+    code = err.code;
+    message = err.message;
   }
 
   res.status(status).json({ error: { code, message } });
